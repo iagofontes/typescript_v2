@@ -15,7 +15,10 @@ System.register(["../models/index"], function (exports_1, context_1) {
                         .then((dados) => execution(dados))
                         .then((resp) => resp.json())
                         .then((response) => response.map(data => new index_1.Negociacao(new Date(), data.vezes, data.montante)))
-                        .catch((err) => console.error(err));
+                        .catch((err) => {
+                        console.error(err);
+                        throw new Error('Impossível buscar negociações.');
+                    });
                 }
             };
             exports_1("NegociacaoService", NegociacaoService);

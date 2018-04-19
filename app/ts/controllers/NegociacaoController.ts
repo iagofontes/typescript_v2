@@ -5,7 +5,9 @@
 import { domInject, throttle } from '../helpers/decorators/index';
 import { NegociacoesView, MensagemView } from '../views/index';
 import { Negociacoes, Negociacao } from '../models/index';
-import { NegociacaoService } from '../services/index';
+import { NegociacaoService, HandlerFunction } from '../services/index';
+
+import { imprime } from '../helpers/index';
 
 export class NegociacaoController {
 
@@ -46,26 +48,43 @@ export class NegociacaoController {
         );
 
         this._negociacoes.adiciona(negociacao);
-
+        // this._negociacoes.paraTexto();
         this._negociacoesView.update(this._negociacoes);
         this._mensagemView.update('Negociação adicionada com sucesso!');
+        imprime(negociacao, this._negociacoes);
     }
 
     @throttle()
-    importar(){
-        // event.preventDefault();
-        function isOk(response: Response){
-            if(response.ok){
-                return response;
-            }else{
-                throw new Error(response.statusText);
+    async importar(){
+
+        try{
+            const isOk:HandlerFunction = (res:Response):Response=>{
+                if(res.ok){
+                    return res;
+                }else{
+                    throw new Error(res.statusText);
+                }
             }
-        }
-        this._service.obterNegociacoes(isOk)
-        .then((arrNegociacao)=>{
-            arrNegociacao.forEach((negociacao)=>this._negociacoes.adiciona(negociacao));
+    
+            const arrNegociacao = await this._service
+                .obterNegociacoes(isOk);
+    
+            const jaImportadas = this._negociacoes.paraArray();
+            arrNegociacao
+                .filter((negociacao)=>
+                    !jaImportadas.some((nego)=>negociacao.ehIgual(nego)))
+                .forEach((negociacao)=>this._negociacoes.adiciona(negociacao));
             this._negociacoesView.update(this._negociacoes);
-        });
+        }catch(error){
+            this._mensagemView.update(error.message);
+        };
+
+        // .then((arrNegociacao)=>{
+
+        // })
+        // .catch(err=>{
+        //     this._mensagemView.update(err.message);
+        // });
         // fetch('http://localhost:8080/dados')
         // .then((dados)=>isOk(dados))
         // .then((resp)=>resp.json())

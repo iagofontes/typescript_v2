@@ -1,4 +1,4 @@
-System.register(["../helpers/decorators/index", "../views/index", "../models/index", "../services/index"], function (exports_1, context_1) {
+System.register(["../helpers/decorators/index", "../views/index", "../models/index", "../services/index", "../helpers/index"], function (exports_1, context_1) {
     "use strict";
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -6,8 +6,16 @@ System.register(["../helpers/decorators/index", "../views/index", "../models/ind
         else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
         return c > 3 && r && Object.defineProperty(target, key, r), r;
     };
+    var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+        return new (P || (P = Promise))(function (resolve, reject) {
+            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+            function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+            step((generator = generator.apply(thisArg, _arguments || [])).next());
+        });
+    };
     var __moduleName = context_1 && context_1.id;
-    var index_1, index_2, index_3, index_4, NegociacaoController, DiaDaSemana;
+    var index_1, index_2, index_3, index_4, index_5, NegociacaoController, DiaDaSemana;
     return {
         setters: [
             function (index_1_1) {
@@ -21,6 +29,9 @@ System.register(["../helpers/decorators/index", "../views/index", "../models/ind
             },
             function (index_4_1) {
                 index_4 = index_4_1;
+            },
+            function (index_5_1) {
+                index_5 = index_5_1;
             }
         ],
         execute: function () {
@@ -43,20 +54,31 @@ System.register(["../helpers/decorators/index", "../views/index", "../models/ind
                     this._negociacoes.adiciona(negociacao);
                     this._negociacoesView.update(this._negociacoes);
                     this._mensagemView.update('Negociação adicionada com sucesso!');
+                    index_5.imprime(negociacao, this._negociacoes);
                 }
                 importar() {
-                    function isOk(response) {
-                        if (response.ok) {
-                            return response;
+                    return __awaiter(this, void 0, void 0, function* () {
+                        try {
+                            const isOk = (res) => {
+                                if (res.ok) {
+                                    return res;
+                                }
+                                else {
+                                    throw new Error(res.statusText);
+                                }
+                            };
+                            const arrNegociacao = yield this._service
+                                .obterNegociacoes(isOk);
+                            const jaImportadas = this._negociacoes.paraArray();
+                            arrNegociacao
+                                .filter((negociacao) => !jaImportadas.some((nego) => negociacao.ehIgual(nego)))
+                                .forEach((negociacao) => this._negociacoes.adiciona(negociacao));
+                            this._negociacoesView.update(this._negociacoes);
                         }
-                        else {
-                            throw new Error(response.statusText);
+                        catch (error) {
+                            this._mensagemView.update(error.message);
                         }
-                    }
-                    this._service.obterNegociacoes(isOk)
-                        .then((arrNegociacao) => {
-                        arrNegociacao.forEach((negociacao) => this._negociacoes.adiciona(negociacao));
-                        this._negociacoesView.update(this._negociacoes);
+                        ;
                     });
                 }
                 _diaUtil(data) {
